@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset - Auto Car</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .form-content {
+            padding: 40px 30px;
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        input.error {
+            border-color: #fc8181;
+        }
+
+        .error-message {
+            color: #e53e3e;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .otp-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .back-btn {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            margin-top: 10px;
+        }
+
+        .back-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .success-message,
+        .info-message {
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-message {
+            background-color: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #38a169;
+        }
+
+        .info-message {
+            background-color: #bee3f8;
+            color: #2c5282;
+            border-left: 4px solid #3182ce;
+        }
+
+        .success-message.show,
+        .info-message.show {
+            display: block;
+        }
+
+        .timer {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .timer.expired {
+            color: #e53e3e;
+        }
+
+        .resend-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .resend-link:hover {
+            text-decoration: underline;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 30px;
+            border-radius: 5px;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+            }
+
+            .form-content {
+                padding: 30px 20px;
+            }
+
+            .otp-input {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Password Reset</h1>
+            <p>Reset your Auto Car account password</p>
+        </div>
+
+        <div class="form-content">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step-dot active" id="step-dot-1"></div>
+                <div class="step-dot" id="step-dot-2"></div>
+                <div class="step-dot" id="step-dot-3"></div>
+            </div>
+
+            <!-- Step 1: Email Input -->
+            <div class="form-step active" id="step1">
+                <div class="text-center icon">📧</div>
+                <h2 style="margin-bottom: 10px; color: #2d3748;">Enter Your Email</h2>
+                <p style="color: #718096; margin-bottom: 25px; text-align: center;">
+                    We'll send you a verification code to reset your password
+                </p>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="example@email.com" required>
+                    <div class="error-message" id="email-error">Please enter a valid email address</div>
+                </div>
+
+                <button id="sendOtpBtn">Send Verification Code</button>
+            </div>
+
+            <!-- Step 2: OTP Verification -->
+            <div class="form-step" id="step2">
+                <div class="text-center icon">🔢</div>
+                <h2 style="margin-bottom: 10px; color: #2d3748;">Enter Verification Code</h2>
+                <p style="color: #718096; margin-bottom: 25px; text-align: center;">
+                    We've sent a 6-digit code to <strong id="email-display"></strong>
+                </p>
+
+                <div class="info-message" id="info-message">
+                    ✓ Verification code sent successfully!
+                </div>
+
+                <div class="otp-inputs">
+                    <input type="text" class="otp-input" maxlength="1" data-index="0">
+                    <input type="text" class="otp-input" maxlength="1" data-index="1">
+                    <input type="text" class="otp-input" maxlength="1" data-index="2">
+                    <input type="text" class="otp-input" maxlength="1" data-index="3">
+                    <input type="text" class="otp-input" maxlength="1" data-index="4">
+                    <input type="text" class="otp-input" maxlength="1" data-index="5">
+                </div>
+                <div class="error-message" id="otp-error">Invalid or expired OTP code</div>
+
+                <div class="timer" id="timer">
+                    Code expires in: <strong id="countdown">10:00</strong>
+                </div>
+                <div class="timer" style="margin-top: 10px;">
+                    Didn't receive code? <a href="#" class="resend-link" id="resendOtp">Resend Code</a>
+                </div>
+
+                <button id="verifyOtpBtn">Verify Code</button>
+                <button class="back-btn" id="backToEmail">Back to Email</button>
+            </div>
+
+            <!-- Step 3: New Password -->
+            <div class="form-step" id="step3">
+                <div class="text-center icon">🔑</div>
+                <h2 style="margin-bottom: 10px; color: #2d3748;">Create New Password</h2>
+                <p style="color: #718096; margin-bottom: 25px; text-align: center;">
+                    Choose a strong password for your account
+                </p>
+
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" placeholder="Enter new password" required>
+                    <div class="error-message" id="password-error">Password must be at least 6 characters</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password" required>
+                    <div class="error-message" id="confirm-password-error">Passwords do not match</div>
+                </div>
+
+                <button id="resetPasswordBtn">Reset Password</button>
+                <button class="back-btn" id="backToOtp">Back to Verification</button>
+            </div>
+
+            <!-- Step 4: Success -->
+            <div class="form-step" id="step4">
+                <div class="text-center icon">✅</div>
+                <h2 style="margin-bottom: 10px; color: #2d3748; text-align: center;">Password Reset Successful!</h2>
+                <p style="color: #718096; margin-bottom: 25px; text-align: center;">
+                    Your password has been successfully reset. You can now login with your new password.
+                </p>
+
+                <button onclick="window.location.href='/login.html'">Go to Login</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:5000/api/auth';
+        let currentStep = 1;
+        let userEmail = '';
+        let otpTimer = null;
+        let timeLeft = 600; // 10 minutes in seconds
+
+        // DOM Elements
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const step4 = document.getElementById('step4');
+        const emailInput = document.getElementById('email');
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupOtpInputs();
+            setupEventListeners();
+        });
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            sendOtpBtn.addEventListener('click', handleSendOtp);
+            verifyOtpBtn.addEventListener('click', handleVerifyOtp);
+            resetPasswordBtn.addEventListener('click', handleResetPassword);
+            document.getElementById('backToEmail').addEventListener('click', () => goToStep(1));
+            document.getElementById('backToOtp').addEventListener('click', () => goToStep(2));
+            document.getElementById('resendOtp').addEventListener('click', handleResendOtp);
+
+            emailInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleSendOtp();
+            });
+
+            [newPasswordInput, confirmPasswordInput].forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') handleResetPassword();
+                });
+            });
+        }
+
+        // Setup OTP Inputs
+        function setupOtpInputs() {
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pastedData = e.clipboardData.getData('text').slice(0, 6);
+                    pastedData.split('').forEach((char, i) => {
+                        if (otpInputs[i]) {
+                            otpInputs[i].value = char;
+                        }
+                    });
+                    if (pastedData.length === 6) {
+                        otpInputs[5].focus();
+                    }
+                });
+            });
+        }
+
+        // Step Navigation
+        function goToStep(step) {
+            document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.step-dot').forEach(d => d.classList.remove('active'));
+
+            document.getElementById(`step${step}`).classList.add('active');
+            document.getElementById(`step-dot-${step}`).classList.add('active');
+            currentStep = step;
+
+            if (step === 2) {
+                startOtpTimer();
+            } else {
+                clearOtpTimer();
+            }
+        }
+
+        // OTP Timer
+        function startOtpTimer() {
+            timeLeft = 600;
+            updateTimerDisplay();
+
+            otpTimer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 0) {
+                    clearOtpTimer();
+                    document.getElementById('timer').classList.add('expired');
+                    document.getElementById('countdown').textContent = 'Expired';
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('countdown').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function clearOtpTimer() {
+            if (otpTimer) {
+                clearInterval(otpTimer);
+                otpTimer = null;
+            }
+        }
+
+        // API Calls
+        async function handleSendOtp() {
+            const email = emailInput.value.trim();
+
+            if (!validateEmail(email)) {
+                showError('email-error', 'Please enter a valid email address');
+                emailInput.classList.add('error');
+                return;
+            }
+
+            emailInput.classList.remove('error');
+            hideError('email-error');
+
+            try {
+                setLoading(sendOtpBtn, true);
+                
+                const response = await fetch(`${API_BASE_URL}/request-password-reset`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    userEmail = email;
+                    document.getElementById('email-display').textContent = email;
+                    document.getElementById('info-message').classList.add('show');
+                    goToStep(2);
+                } else {
+                    showError('email-error', data.message || 'Failed to send OTP');
+                    emailInput.classList.add('error');
+                }
+            } catch (error) {
+                showError('email-error', 'Network error. Please try again.');
+                emailInput.classList.add('error');
+            } finally {
+                setLoading(sendOtpBtn, false);
+            }
+        }
+
+        async function handleVerifyOtp() {
+            const otp = Array.from(otpInputs).map(input => input.value).join('');
+
+            if (otp.length !== 6) {
+                showError('otp-error', 'Please enter the complete 6-digit code');
+                otpInputs.forEach(input => input.classList.add('error'));
+                return;
+            }
+
+            otpInputs.forEach(input => input.classList.remove('error'));
+            hideError('otp-error');
+
+            // Store OTP for password reset
+            window.otpCode = otp;
+            goToStep(3);
+        }
+
+        async function handleResetPassword() {
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            let hasError = false;
+
+            if (newPassword.length < 6) {
+                showError('password-error', 'Password must be at least 6 characters');
+                newPasswordInput.classList.add('error');
+                hasError = true;
+            } else {
+                hideError('password-error');
+                newPasswordInput.classList.remove('error');
+            }
+
+            if (newPassword !== confirmPassword) {
+                showError('confirm-password-error', 'Passwords do not match');
+                confirmPasswordInput.classList.add('error');
+                hasError = true;
+            } else {
+                hideError('confirm-password-error');
+                confirmPasswordInput.classList.remove('error');
+            }
+
+            if (hasError) return;
+
+            try {
+                setLoading(resetPasswordBtn, true);
+
+                const response = await fetch(`${API_BASE_URL}/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        otp: window.otpCode,
+                        newPassword: newPassword
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    goToStep(4);
+                } else {
+                    alert(data.message || 'Failed to reset password. Please try again.');
+                }
+            } catch (error) {
+                alert('Network error. Please try again.');
+            } finally {
+                setLoading(resetPasswordBtn, false);
+            }
+        }
+
+        async function handleResendOtp(e) {
+            e.preventDefault();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/request-password-reset`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    otpInputs.forEach(input => input.value = '');
+                    otpInputs[0].focus();
+                    document.getElementById('info-message').classList.add('show');
+                    document.getElementById('timer').classList.remove('expired');
+                    startOtpTimer();
+                } else {
+                    alert(data.message || 'Failed to resend OTP');
+                }
+            } catch (error) {
+                alert('Network error. Please try again.');
+            }
+        }
+
+        // Utility Functions
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.classList.remove('show');
+        }
+
+        function setLoading(button, isLoading) {
+            if (isLoading) {
+                button.disabled = true;
+                button.innerHTML = button.textContent + ' <span class="loader"></span>';
+            } else {
+                button.disabled = false;
+                button.innerHTML = button.textContent.replace(' ', '').split('<')[0];
+            }
+        }
+    </script>
+</body>
+</html>
