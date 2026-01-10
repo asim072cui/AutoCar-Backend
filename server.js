@@ -27,9 +27,26 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// CORS Configuration - Updated for production
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://your-frontend-domain.vercel.app", // Add your frontend URL
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -64,7 +81,7 @@ const startServer = async () => {
 
     const io = new Server(httpServer, {
       cors: {
-        origin: "http://localhost:3000",
+        origin: allowedOrigins,
         methods: ["GET", "POST"],
         credentials: true,
       },
@@ -75,9 +92,16 @@ const startServer = async () => {
     ChatSocket(io);
 
     const PORT = process.env.PORT || 5000;
-    httpServer.listen(PORT, () =>
-      console.log(`🚀 Server running on port ${PORT}`)
-    );
+    
+    // Only start server if not in serverless environment
+    if (process.env.VERCEL !== "1") {
+      httpServer.listen(PORT, () =>
+        console.log(`🚀 Server running on port ${PORT}`)
+      );
+    }
+
+    // Export for Vercel
+    return httpServer;
 
   } catch (err) {
     console.error("❌ Failed to start server:", err.message);
@@ -85,4 +109,8 @@ const startServer = async () => {
   }
 };
 
-startServer();
+// Start server
+const serverInstance = await startServer();
+
+// Export for Vercel
+export default serverInstance;
